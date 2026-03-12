@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>马六甲小炒 - 自助点单</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f8f8;
+            padding-bottom: 80px;
+        }
+        
+        .header {
+            background-color: #c43e2c;
+            color: white;
+            padding: 20px 16px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .table-info {
+            background-color: white;
+            margin: 12px 16px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .table-label {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .table-select {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: white;
+        }
+        
+        .menu-section {
+            margin: 20px 16px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            padding-left: 4px;
+            border-left: 4px solid #c43e2c;
+            padding-left: 12px;
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+        }
+        
+        .menu-item {
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        
+        .menu-item:active {
+            transform: scale(0.98);
+        }
+        
+        .item-image {
+            width: 100%;
+            height: 120px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 14px;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .item-info {
+            padding: 10px;
+        }
+        
+        .item-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .item-price {
+            font-size: 16px;
+            color: #c43e2c;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .add-btn {
+            background-color: #c43e2c;
+            color: white;
+            border: none;
+            padding: 8px 0;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .add-btn:hover {
+            background-color: #a53222;
+        }
+        
+        .cart-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            box-shadow: 0 -2px 15px rgba(0,0,0,0.1);
+            border-radius: 20px 20px 0 0;
+            padding: 16px;
+            max-height: 50vh;
+            overflow-y: auto;
+            transition: transform 0.3s;
+        }
+        
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .cart-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .cart-clear {
+            color: #999;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .cart-items {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+        
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .cart-item-info {
+            flex: 2;
+        }
+        
+        .cart-item-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .cart-item-price {
+            font-size: 14px;
+            color: #c43e2c;
+        }
+        
+        .cart-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .qty-btn {
+            background-color: #f0f0f0;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .item-qty {
+            font-size: 14px;
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+        }
+        
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 12px 0;
+            padding-top: 8px;
+            border-top: 2px solid #f0f0f0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .submit-btn {
+            background-color: #c43e2c;
+            color: white;
+            border: none;
+            padding: 16px;
+            width: 100%;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        
+        .submit-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .order-success {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            display: none;
+            z-index: 1000;
+            width: 80%;
+            max-width: 300px;
+        }
+        
+        .order-success.show {
+            display: block;
+        }
+        
+        .success-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+        
+        .order-success h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .order-success p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .success-btn {
+            background-color: #c43e2c;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 999;
+        }
+        
+        .overlay.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🍳 马六甲小炒</h1>
+        <p>自助点单 · 吃完前台结账</p>
+    </div>
+    
+    <!-- 桌号选择 -->
+    <div class="table-info">
+        <span class="table-label">桌号：</span>
+        <select id="tableSelect" class="table-select">
+            <option value="">请选择您的桌号</option>
+            <option value="1">1号桌</option>
+            <option value="2">2号桌</option>
+            <option value="3">3号桌</option>
+            <option value="4">4号桌</option>
+            <option value="5">5号桌</option>
+            <option value="6">6号桌</option>
+        </select>
+    </div>
+    
+    <!-- 菜单分类：热炒 -->
+    <div class="menu-section">
+        <div class="section-title">🔥 热炒经典</div>
+        <div class="menu-grid" id="menuGrid">
+            <!-- 菜单会通过JavaScript动态生成 -->
+        </div>
+    </div>
+    
+    <!-- 购物车面板 -->
+    <div class="cart-panel">
+        <div class="cart-header">
+            <span class="cart-title">🛒 我的点单</span>
+            <span class="cart-clear" id="clearCart">清空</span>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- 购物车内容动态生成 -->
+            <div style="text-align: center; color: #999; padding: 20px;">购物车是空的，点几道菜吧！</div>
+        </div>
+        <div class="cart-total">
+            <span>合计</span>
+            <span id="cartTotal">RM 0.00</span>
+        </div>
+        <button class="submit-btn" id="submitOrder">确认下单</button>
+    </div>
+    
+    <!-- 下单成功弹窗 -->
+    <div class="overlay" id="overlay"></div>
+    <div class="order-success" id="orderSuccess">
+        <div class="success-icon">✅</div>
+        <h3>下单成功！</h3>
+        <p id="successMessage">请稍等，厨师马上开始炒菜</p>
+        <button class="success-btn" id="closeSuccess">好的</button>
+    </div>
+
+    <script>
+        // 菜单数据（请替换成您档口的真实菜品）
+        const menuData = [
+            { id: 1, name: '福建炒面', price: 12.00, category: '热炒', image: '🍜' },
+            { id: 2, name: '滑蛋河粉', price: 11.00, category: '热炒', image: '🍲' },
+            { id: 3, name: '咕咾肉', price: 18.00, category: '热炒', image: '🥩' },
+            { id: 4, name: '马来风光', price: 10.00, category: '蔬菜', image: '🥬' },
+            { id: 5, name: '咸鱼炒芽菜', price: 9.00, category: '蔬菜', image: '🥗' },
+            { id: 6, name: '咖喱鱼头', price: 25.00, category: '特色', image: '🐟' },
+            { id: 7, name: '奶油虾', price: 22.00, category: '海鲜', image: '🍤' },
+            { id: 8, name: '酸甜鱼片', price: 20.00, category: '海鲜', image: '🐠' },
+            { id: 9, name: '菜香豆腐', price: 10.00, category: '热炒', image: '🥟' },
+            { id: 10, name: '姜葱炒肉片', price: 16.00, category: '热炒', image: '🥓' }
+        ];
+        
+        // 购物车数据
+        let cart = [];
+        
+        // 渲染菜单
+        function renderMenu() {
+            const menuGrid = document.getElementById('menuGrid');
+            menuGrid.innerHTML = '';
+            
+            menuData.forEach(item => {
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-item';
+                menuItem.innerHTML = `
+                    <div class="item-image" style="background-color: #f5e6d3; display: flex; align-items: center; justify-content: center; font-size: 40px;">${item.image}</div>
+                    <div class="item-info">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-price">RM ${item.price.toFixed(2)}</div>
+                        <button class="add-btn" onclick="addToCart(${item.id})">点菜 +</button>
+                    </div>
+                `;
+                menuGrid.appendChild(menuItem);
+            });
+        }
+        
+        // 添加到购物车
+        window.addToCart = function(itemId) {
+            const item = menuData.find(i => i.id === itemId);
+            const existingItem = cart.find(i => i.id === itemId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: 1
+                });
+            }
+            
+            renderCart();
+        };
+        
+        // 更新购物车数量
+        window.updateQuantity = function(itemId, change) {
+            const index = cart.findIndex(i => i.id === itemId);
+            if (index !== -1) {
+                const newQty = cart[index].quantity + change;
+                if (newQty <= 0) {
+                    cart.splice(index, 1);
+                } else {
+                    cart[index].quantity = newQty;
+                }
+            }
+            renderCart();
+        };
+        
+        // 渲染购物车
+        function renderCart() {
+            const cartItems = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">购物车是空的，点几道菜吧！</div>';
+                cartTotal.innerText = 'RM 0.00';
+                return;
+            }
+            
+            let html = '';
+            let total = 0;
+            
+            cart.forEach(item => {
+                total += item.price * item.quantity;
+                html += `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-price">RM ${item.price.toFixed(2)}</div>
+                        </div>
+                        <div class="cart-item-actions">
+                            <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
+                            <span class="item-qty">${item.quantity}</span>
+                            <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            cartItems.innerHTML = html;
+            cartTotal.innerText = `RM ${total.toFixed(2)}`;
+        }
+        
+        // 清空购物车
+        document.getElementById('clearCart').addEventListener('click', function() {
+            if (confirm('确定清空购物车吗？')) {
+                cart = [];
+                renderCart();
+            }
+        });
+        
+        // 提交订单
+        document.getElementById('submitOrder').addEventListener('click', function() {
+            const tableNo = document.getElementById('tableSelect').value;
+            
+            if (!tableNo) {
+                alert('请先选择桌号！');
+                return;
+            }
+            
+            if (cart.length === 0) {
+                alert('购物车是空的，点几道菜吧！');
+                return;
+            }
+            
+            // 构造订单数据
+            const order = {
+                tableNo: tableNo,
+                items: cart,
+                total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
+                timestamp: new Date().toISOString(),
+                orderId: 'ORD' + Date.now()
+            };
+            
+            // 这里应该把订单发送到您的后台服务器
+            // 但现在我们先模拟一下，把订单保存到本地存储
+            // 真实使用时，这里要用 fetch 发送到您的服务器
+            
+            // 模拟发送到后台
+            console.log('订单已生成：', order);
+            
+            // 保存到本地（模拟后台记录）
+            let orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders.push(order);
+            localStorage.setItem('orders', JSON.stringify(orders));
+            
+            // 显示成功弹窗
+            document.getElementById('successMessage').innerHTML = `桌号 ${tableNo}<br>合计 RM ${order.total.toFixed(2)}<br><br>吃完请到前台结账`;
+            document.getElementById('overlay').classList.add('show');
+            document.getElementById('orderSuccess').classList.add('show');
+            
+            // 清空购物车和桌号选择
+            cart = [];
+            renderCart();
+            document.getElementById('tableSelect').value = '';
+        });
+        
+        // 关闭成功弹窗
+        document.getElementById('closeSuccess').addEventListener('click', function() {
+            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('orderSuccess').classList.remove('show');
+        });
+        
+        document.getElementById('overlay').addEventListener('click', function() {
+            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('orderSuccess').classList.remove('show');
+        });
+        
+        // 页面加载时渲染菜单
+        renderMenu();
+    </script>
+</body>
+</html>
