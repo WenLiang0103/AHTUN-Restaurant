@@ -482,50 +482,61 @@
         });
         
         // 提交订单
-        document.getElementById('submitOrder').addEventListener('click', function() {
-            const tableNo = document.getElementById('tableSelect').value;
-            
-            if (!tableNo) {
-                alert('请先选择桌号！');
-                return;
-            }
-            
-            if (cart.length === 0) {
-                alert('购物车是空的，点几道菜吧！');
-                return;
-            }
-            
-            // 构造订单数据
-            const order = {
-                tableNo: tableNo,
-                items: cart,
-                total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
-                timestamp: new Date().toISOString(),
-                orderId: 'ORD' + Date.now()
-            };
-            
-            // 这里应该把订单发送到您的后台服务器
-            // 但现在我们先模拟一下，把订单保存到本地存储
-            // 真实使用时，这里要用 fetch 发送到您的服务器
-            
-            // 模拟发送到后台
-            console.log('订单已生成：', order);
-            
-            // 保存到本地（模拟后台记录）
-            let orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            orders.push(order);
-            localStorage.setItem('orders', JSON.stringify(orders));
-            
-            // 显示成功弹窗
-            document.getElementById('successMessage').innerHTML = `桌号 ${tableNo}<br>合计 RM ${order.total.toFixed(2)}<br><br>吃完请到前台结账`;
-            document.getElementById('overlay').classList.add('show');
-            document.getElementById('orderSuccess').classList.add('show');
-            
-            // 清空购物车和桌号选择
-            cart = [];
-            renderCart();
-            document.getElementById('tableSelect').value = '';
+document.getElementById('submitOrder').addEventListener('click', async function() {
+    const tableNo = document.getElementById('tableSelect').value;
+    
+    if (!tableNo) {
+        alert('请先选择桌号！');
+        return;
+    }
+    
+    if (cart.length === 0) {
+        alert('购物车是空的，点几道菜吧！');
+        return;
+    }
+    
+    // 构造订单数据
+    const order = {
+        tableNo: tableNo,
+        items: cart,
+        total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
+        timestamp: new Date().toISOString(),
+        orderId: 'ORD' + Date.now()
+    };
+    
+    try {
+        // ⭐ 发送到新创建的API
+        const response = await fetch('/api/save-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(order)
         });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || '订单保存失败');
+        }
+        
+        console.log('订单已保存到服务器:', result);
+        
+        // 显示成功弹窗
+        document.getElementById('successMessage').innerHTML = `桌号 ${tableNo}<br>合计 RM ${order.total.toFixed(2)}<br><br>吃完请到前台结账`;
+        document.getElementById('overlay').classList.add('show');
+        document.getElementById('orderSuccess').classList.add('show');
+        
+        // 清空购物车和桌号选择
+        cart = [];
+        renderCart();
+        document.getElementById('tableSelect').value = '';
+        
+    } catch (error) {
+        console.error('下单失败:', error);
+        alert('下单失败，请重试或直接叫服务员');
+    }
+});
         
         // 关闭成功弹窗
         document.getElementById('closeSuccess').addEventListener('click', function() {
