@@ -19,7 +19,7 @@ export default async function handler(req, res) {
         }
 
         // 4. 连接数据库
-        const sql = neon(process.env.POSTGRES_PRISMA_URL_POSTGRES_URL);
+        const sql = neon(process.env.POSTGRES_PRISMA_URL_POSTGRESS_URL);
         
         // 5. 把订单插入数据库（直接使用已存在的表）
         const result = await sql`
@@ -50,3 +50,4 @@ export default async function handler(req, res) {
         });
     }
 }
+
